@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+  <style>
+  body { 
+    width: 380px; 
+    padding: 0; margin: 0; 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+    position: relative;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .message { 
+    position: fixed; top: 10px; right: 10px; 
+    padding: 8px 12px; border-radius: 6px; font-size: 12px; z-index: 1001; 
+  }
+  .message.success { background: #10b981; color: white; }
+  .message.error { background: #ef4444; color: white; }
+  .message.hidden { display: none; }
+  
+  /* Login Screen */
+  .login-container { padding: 30px 25px; }
+  .logo { text-align: center; margin-bottom: 30px; }
+  .logo h1 { font-size: 26px; margin: 0 0 4px 0; color: #1f2937; }
+  .logo p { color: #6b7280; margin: 0; font-size: 14px; }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; margin-bottom: 6px; font-weight: 500; color: #374151; font-size: 13px; }
+  .password-row { position: relative; }
+  input[type="email"], input[type="password"] { 
+    width: 100%; padding: 12px 45px 12px 16px; 
+    border: 1px solid #d1d5db; border-radius: 8px; 
+    box-sizing: border-box; font-size: 14px; 
+    transition: border-color 0.2s;
+  }
+  input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  #toggle-login-password { 
+    position: absolute; right: 12px; top: 50%; 
+    transform: translateY(-50%); background: none; border: none; 
+    font-size: 16px; cursor: pointer; color: #6b7280;
+  }
+  .auth-links { text-align: center; margin-top: 20px; }
+  #register-link { color: #3b82f6; text-decoration: none; font-size: 14px; }
+
+  /* PIN Screens */
+  .pin-container {
+    padding: 30px;
+    text-align: center;
+  }
+  .pin-container h2 {
+    margin-bottom: 10px;
+    color: #1f2937;
+  }
+  .pin-container p {
+    color: #6b7280;
+    margin-bottom: 20px;
+  }
+  .pin-input {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    font-size: 20px;
+    letter-spacing: 4px;
+    text-align: center;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: monospace;
+    box-sizing: border-box;
+  }
+  .pin-error {
+    color: #ef4444;
+    font-size: 12px;
+    min-height: 20px;
+    margin: 5px 0;
+  }
+  
+  /* Vault Screen */
+  .vault-header { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 18px 20px 12px; border-bottom: 1px solid #e5e7eb;
+  }
+  .vault-header h2 { margin: 0; font-size: 18px; color: #1f2937; }
+  .header-buttons { display: flex; gap: 8px; }
+  .icon-btn { 
+    width: 36px; height: 36px; border-radius: 8px; 
+    border: none; cursor: pointer; font-size: 16px; 
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover { transform: scale(1.05); }
+  #logout-btn { background: #bfdbfe; color: white; }
+  #add-new-btn { background: #10b981; color: white; position: fixed; top: 18px; right: 68px; z-index: 100; }
+  
+  #vault-screen {
+    position: relative;
+    padding-top: 70px;
+  }
+
+  #header-actions {
+    position: sticky !important;
+    top: 0 !important;
+  }
+
+  .search-box { 
+    position: relative; padding: 16px 20px 16px; 
+    background: #f9fafb; border-bottom: 1px solid #e5e7eb;
+  }
+  #search-input { 
+    width: 100%; padding: 10px 40px 10px 14px; 
+    border: 1px solid #d1d5db; border-radius: 8px; 
+    box-sizing: border-box; font-size: 14px; background: white;
+  }
+  #refresh-btn { 
+    position: absolute; right: 28px; top: 50%; 
+    transform: translateY(-50%); background: #bfdbfe; color: white; width: 28px; height: 32px;
+  }
+  
+  .vault-list { max-height: 320px; overflow-y: auto; padding: 0 20px 20px; }
+  .vault-item { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 14px; margin-bottom: 10px; background: white; 
+    border-radius: 10px; cursor: pointer; transition: all 0.2s;
+    border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .vault-item:hover { 
+    background: #f8fafc; transform: translateY(-1px); 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .vault-info { flex: 1; }
+  .vault-site { 
+    font-weight: 600; font-size: 14px; color: #1f2937; 
+    margin-bottom: 2px; word-break: break-all;
+  }
+  .vault-username { 
+    font-size: 12px; color: #6b7280; 
+  }
+  .copy-btn { 
+    background: #6b7280; color: white; width: 32px; height: 32px; 
+    border-radius: 6px; border: none; cursor: pointer; font-size: 14px;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { 
+    background: #4b5563; transform: scale(1.05); 
+  }
+  
+  .empty-state { 
+    text-align: center; padding: 60px 20px; color: #6b7280; 
+  }
+  .empty-state small { display: block; margin-top: 8px; font-size: 12px; }
+  
+  .quick-actions { 
+    padding: 20px; display: flex; gap: 12px; border-top: 1px solid #e5e7eb;
+  }
+  .btn-primary, .btn-secondary { 
+    flex: 1; padding: 12px 16px; border: none; border-radius: 8px; 
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary { background: #3b82f6; color: white; }
+  .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+  .btn-secondary { background: #3b82f6; color: white; }
+  .btn-secondary:hover { background: #2563eb; transform: translateY(-1px); }
+
+  /* PIN Settings Toggle */
+  .settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+  }
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 24px;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+  }
+  input:checked + .slider {
+    background-color: #3b82f6;
+  }
+  input:checked + .slider:before {
+    transform: translateX(26px);
+  }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen" class="screen active">
+    <div style="padding: 40px 30px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <img src="icon.png" alt="SecurePass Logo" style="width: 70px; height: 70px; margin-bottom: 10px;">
+        <h1 style="font-size: 40px; margin: 0 0 8px 0; color: #2563eb;">SecurePass</h1>
+        <p style="font-size: 14px; color: #6b7280; margin: 0;">Security You Can Trust.</p>
+      </div>
+      
+      <form id="login-form">
+        <div style="margin-bottom: 16px;">
+          <input type="email" id="login-email" required placeholder="example@email.com" 
+                 style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 14px;">
+        </div>
+        <div style="margin-bottom: 20px; position: relative;">
+          <input type="password" id="login-password" required placeholder="••••••••" 
+                 style="width: 100%; padding: 12px 16px 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 14px;">
+          <button type="button" id="toggle-login-password" class="icon-btn" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; background: #f3f4f6;">👁</button>
+        </div>
+        
+        <!-- 2FA Section -->
+        <div id="popup-twofa-section" style="display: none;">
+          <div class="field">
+            <label for="popup-twofa-code">Two-Factor Authentication Code</label>
+            <div class="password-row">
+              <input 
+                id="popup-twofa-code" 
+                type="text" 
+                placeholder="Enter 6-digit code" 
+                maxlength="9"
+                style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 14px;"
+              />
+            </div>
+            <p style="font-size: 12px; color: #64748b; margin-top: 4px;">
+              <a href="#" id="popup-use-backup-code">Use backup code instead</a>
+            </p>
+          </div>
+        </div>
+        
+        <button type="submit" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6, #22c55e); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">Login</button>
+      </form>
+      
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="#" id="register-link" style="color: #3b82f6; text-decoration: none; font-size: 14px;">Don't have an account? Register</a>
+      </div>
+    </div>
+  </div>
+
+ <!-- PIN Unlock Screen -->
+<div id="pin-unlock-screen" class="screen">
+  <div style="padding: 40px 30px; text-align: center;">
+    <!-- SecurePass Logo -->
+    <div style="margin-bottom: 30px;">
+      <img src="icon.png" alt="SecurePass Logo" style="width: 80px; height: 80px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    </div>
+    
+    <h2 style="font-size: 24px; color: #1f2937; margin: 0 0 8px 0; font-weight: 600;">Welcome Back!</h2>
+    <p style="font-size: 14px; color: #6b7280; margin: 0 0 30px 0;">Enter your PIN to unlock your vault</p>
+    
+    <!-- PIN Input Field -->
+    <div style="margin-bottom: 20px;">
+      <input type="password" id="pin-unlock-input" maxlength="6" 
+             placeholder="••••••" 
+             style="width: 100%; max-width: 200px; padding: 16px 20px; font-size: 24px; letter-spacing: 8px; text-align: center; border: 2px solid #e5e7eb; border-radius: 12px; font-family: monospace; background: white; transition: all 0.2s; outline: none; margin: 0 auto; display: block;"
+             onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+             onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+    </div>
+    
+    <!-- Error Message -->
+    <div id="pin-unlock-error" style="color: #ef4444; font-size: 13px; min-height: 20px; margin-bottom: 20px;"></div>
+    
+    <!-- Buttons -->
+    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 280px; margin: 0 auto;">
+      <button id="pin-unlock-btn" 
+              style="width: 100%; padding: 14px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(59,130,246,0.3);"
+              onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(59,130,246,0.4)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59,130,246,0.3)'">
+        Unlock Vault
+      </button>
+      
+      <button id="pin-unlock-logout" 
+              style="width: 100%; padding: 12px; background: transparent; color: #6b7280; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;"
+              onmouseover="this.style.background='#f9fafb'; this.style.borderColor='#d1d5db'"
+              onmouseout="this.style.background='transparent'; this.style.borderColor='#e5e7eb'">
+        Use Master Password
+      </button>
+    </div>
+  </div>
+</div>
+
+ <!-- PIN Setup Screen -->
+<div id="pin-setup-screen" class="screen">
+  <div style="padding: 40px 30px; text-align: center;">
+    <!-- SecurePass Logo -->
+    <div style="margin-bottom: 30px;">
+      <img src="icon.png" alt="SecurePass Logo" style="width: 80px; height: 80px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    </div>
+    
+    <h2 style="font-size: 24px; color: #1f2937; margin: 0 0 8px 0; font-weight: 600;">Set Up PIN</h2>
+    <p style="font-size: 14px; color: #6b7280; margin: 0 0 30px 0;">Create a 4-6 digit PIN for quick access</p>
+    
+    <!-- PIN Input Fields -->
+    <div style="margin-bottom: 15px;">
+      <input type="password" id="pin-setup-input" maxlength="6" 
+             placeholder="Enter PIN" 
+             style="width: 100%; max-width: 250px; padding: 14px 16px; font-size: 20px; letter-spacing: 4px; text-align: center; border: 2px solid #e5e7eb; border-radius: 12px; font-family: monospace; background: white; transition: all 0.2s; outline: none; margin: 0 auto; display: block; box-sizing: border-box;"
+             onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+             onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+      <input type="password" id="pin-setup-confirm" maxlength="6" 
+             placeholder="Confirm PIN" 
+             style="width: 100%; max-width: 250px; padding: 14px 16px; font-size: 20px; letter-spacing: 4px; text-align: center; border: 2px solid #e5e7eb; border-radius: 12px; font-family: monospace; background: white; transition: all 0.2s; outline: none; margin: 0 auto; display: block; box-sizing: border-box;"
+             onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+             onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+    </div>
+    
+    <!-- Error Message -->
+    <div id="pin-setup-error" style="color: #ef4444; font-size: 13px; min-height: 20px; margin-bottom: 20px;"></div>
+    
+    <!-- Buttons -->
+    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 280px; margin: 0 auto;">
+      <button id="pin-setup-save" 
+              style="width: 100%; padding: 14px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(16,185,129,0.3);"
+              onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(16,185,129,0.4)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.3)'">
+        Save PIN
+      </button>
+      
+      <button id="pin-setup-skip" 
+              style="width: 100%; padding: 12px; background: transparent; color: #6b7280; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;"
+              onmouseover="this.style.background='#f9fafb'; this.style.borderColor='#d1d5db'"
+              onmouseout="this.style.background='transparent'; this.style.borderColor='#e5e7eb'">
+        Skip
+      </button>
+    </div>
+  </div>
+</div>
+
+  <!-- Vault Screen -->
+  <div id="vault-screen" class="screen">
+    <!-- PIN Settings Toggle -->
+    <div class="settings-item">
+      <span>🔐 Unlock with PIN</span>
+      <label class="switch">
+        <input type="checkbox" id="pin-toggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    
+    <div class="vault-header">
+       <h2>🔐 My Vault</h2>
+       <button id="logout-btn" class="icon-btn logout">🚪</button>
+    </div>
+    
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="Search websites...">
+      <button id="refresh-btn" class="icon-btn" title="Refresh" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px;">↻</button>
+    </div>
+    
+    <div class="vault-list">
+      <div id="vault-items"></div>
+      <div id="empty-state" class="empty-state">No passwords found</div>
+    </div>
+    
+    <div class="quick-actions">
+      <button id="generate-btn" class="btn-secondary">Generate</button>
+      <button id="fill-btn" class="btn-primary">Fill Site</button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div id="message" class="message hidden"></div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
