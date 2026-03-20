@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SecurePass – Create Account</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-page">
+  <div class="page-wrapper">
+    <div class="card">
+      <header class="card-header">
+        <img src="icon.png" alt="SecurePass Logo" style="width: 100px; height: 100px; margin-bottom: 10px;">
+        <h1 class="brand">SecurePass</h1>
+        <p class="tagline">Security You Can Trust.</p>
+      </header>
+
+      <h2 class="card-title">Create Account</h2>
+
+      <form id="register-form" class="form">
+        <div class="field">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="masterPassword">Master Password</label>
+          <div class="password-row">
+            <input
+              id="masterPassword"
+              type="password"
+              placeholder="Create a strong master password"
+              required
+            />
+            <button
+              type="button"
+              id="togglePassword"
+              class="icon-btn"
+              aria-label="Show password"
+              style="position: absolute; right: 2px; top: 50%; transform: translateY(-50%);"
+            >
+              👁
+            </button>
+          </div>
+        </div>
+
+        <div class="strength-row">
+          <span>Password Strength:</span>
+          <span id="strength-text" class="strength-text strength-none">–</span>
+        </div>
+
+        <button type="submit" class="primary-btn">Register</button>
+
+        <p class="switch-text">
+          Already have an account?
+          <a href="login.html">Login</a>
+        </p>
+
+        <p id="message" class="message"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

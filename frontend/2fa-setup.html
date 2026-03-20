@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SecurePass – 2FA Setup</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .twofa-container {
+      max-width: 550px;
+      margin: 40px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      font-size: 28px;
+      color: var(--accent-strong);
+      margin-bottom: 10px;
+    }
+    
+    .step-indicator {
+      display: flex;
+      margin: 30px 0;
+      position: relative;
+    }
+    
+    .step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+    
+    .step-number {
+      width: 32px;
+      height: 32px;
+      background: #e2e8f0;
+      color: #64748b;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+      font-weight: 600;
+    }
+    
+    .step.active .step-number {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .step.completed .step-number {
+      background: var(--success);
+      color: white;
+    }
+    
+    .qr-section {
+      text-align: center;
+      margin: 30px 0;
+      padding: 20px;
+      background: #f8fafc;
+      border-radius: 12px;
+    }
+    
+    #qr-code {
+      max-width: 200px;
+      margin: 0 auto 15px;
+    }
+    
+    #qr-code img {
+      width: 100%;
+      border: 2px solid white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .manual-secret {
+      background: #1e293b;
+      color: #a5f3fc;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 14px;
+      margin: 15px 0;
+      word-break: break-all;
+    }
+    
+    .backup-codes-section {
+      background: #f8fafc;
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 30px 0;
+    }
+    
+    .backup-codes-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+    
+    .backup-code {
+      background: white;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    
+    .warning-box {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    .code-input {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    
+    #verification-code {
+      flex: 1;
+      padding: 14px;
+      font-size: 20px;
+      letter-spacing: 4px;
+      text-align: center;
+      font-family: monospace;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    .button-group button {
+      flex: 1;
+      padding: 12px;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="twofa-container">
+    <h1>🔐 Two-Factor Authentication</h1>
+    <p>Add an extra layer of security to your account</p>
+    
+    <!-- QR Code -->
+    <div id="step1">
+      <div class="step-indicator">
+        <div class="step active"><div class="step-number">1</div><div>Scan QR</div></div>
+        <div class="step"><div class="step-number">2</div><div>Verify</div></div>
+        <div class="step"><div class="step-number">3</div><div>Backup Codes</div></div>
+      </div>
+      
+      <div class="qr-section">
+        <div id="qr-code">
+          <p>Loading QR code...</p>
+        </div>
+        
+        <p><strong>Scan this QR code with your authenticator app</strong></p>
+        <p style="color: #64748b; font-size: 14px;">(Google Authenticator, Authy, Microsoft Authenticator, etc.)</p>
+        
+        <details>
+          <summary style="color: var(--accent); cursor: pointer; margin: 15px 0;">Can't scan the code?</summary>
+          <div class="manual-secret" id="manual-secret"></div>
+        </details>
+      </div>
+      
+      <div class="code-input">
+        <input type="text" id="verification-code" placeholder="000000" maxlength="6" />
+        <button id="verify-btn" class="primary-btn">Verify</button>
+      </div>
+      
+      <div id="step1-message" class="message" style="display: none;"></div>
+    </div>
+    
+    <!-- Backup Codes -->
+    <div id="step2" class="hidden">
+      <div class="step-indicator">
+        <div class="step completed"><div class="step-number">✓</div><div>Scan QR</div></div>
+        <div class="step completed"><div class="step-number">✓</div><div>Verify</div></div>
+        <div class="step active"><div class="step-number">3</div><div>Backup Codes</div></div>
+      </div>
+      
+      <div class="warning-box">
+        <strong>⚠️ Save these backup codes!</strong>
+        <p>Each code can be used only once. Store them in a safe place (like a password manager or safe).</p>
+      </div>
+      
+      <div class="backup-codes-section">
+        <div class="backup-codes-grid" id="backup-codes-list">
+        </div>
+      </div>
+      
+      <div class="button-group">
+        <button id="download-codes" class="secondary-btn">📥 Download</button>
+        <button id="copy-codes" class="secondary-btn">📋 Copy</button>
+        <a href="vault.html" id="continue-btn" class="primary-btn" style="text-align: center;">Continue to Vault</a>
+      </div>
+      
+      <p style="text-align: center; margin-top: 15px; font-size: 13px; color: #94a3b8;">
+        You can always regenerate backup codes in settings
+      </p>
+    </div>
+  </div>
+  
+  <script src="2fa-setup.js"></script>
+</body>
+</html>

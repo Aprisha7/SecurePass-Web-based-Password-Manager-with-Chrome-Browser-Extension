@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SecurePass – Security You Can Trust</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="vault-page">
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand horizontal">
+          <img src="icon.png" alt="SecurePass Logo" class="sidebar-logo">
+          <div class="brand-text">
+          <h1 class="brand">SecurePass</h1>
+          <p class="tagline">Security You Can Trust.</p>
+          </div>
+        </div>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item active">
+          <a href="#" data-page="vault" class="nav-link">
+            <span class="nav-icon">🔒</span>
+            All Passwords
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" data-page="generator" class="nav-link">
+            <span class="nav-icon">🔑</span>
+            Password Generator
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" data-page="analyzer" class="nav-link">
+            <span class="nav-icon">📊</span>
+            Strength Analyzer
+          </a>
+        </li>
+        <!-- Admin Dashboard Link -->
+        <li class="nav-item admin-nav-item" id="admin-nav-item" style="display: none;">
+          <a href="#" data-page="admin" class="nav-link">
+            <span class="nav-icon"> 👨🏻‍💻</span>
+            Admin Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" data-page="2fa" class="nav-link">
+            <span class="nav-icon">🔐</span>
+            2FA Settings
+          </a>
+        </li>
+      </ul>
+      
+      <div class="sidebar-footer">
+        <button id="logout-btn" class="secondary-btn full-width">Logout</button>
+      </div>
+    </nav>
+
+    <!-- Main Vault Content -->
+    <main class="main-content">
+      <!-- 1. All Passwords Section -->
+      <div id="vault-section" class="page-section active">
+        <header class="page-header">
+          <h1 class="page-title">All Passwords</h1>
+        </header>
+        
+        <div class="vault-controls">
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-input-wrapper">
+      <input id="password-search" type="text" placeholder="Search websites or usernames..." />
+      <button id="clear-search" class="icon-btn" style="display: none;">✕</button>
+    </div>
+  </div>
+  
+  <!-- Add Button -->
+  <div class="add-password-section">
+    <button id="show-add-modal" class="add-btn">
+      <span class="btn-icon">➕</span> Add New Password
+    </button>
+  </div>
+</div>
+
+<!-- Add Password Modal -->
+<div id="add-password-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Add New Password</h2>
+      <button id="close-add-modal" class="icon-btn" style="font-size: 18px;">✕</button>
+    </div>
+    <form id="add-password-form">
+      <div class="field">
+        <label for="modal-website">Website URL</label>
+        <input id="modal-website" type="url" placeholder="https://example.com" required />
+      </div>
+      <div class="field">
+        <label for="modal-username">Username / Email</label>
+        <input id="modal-username" type="text" placeholder="user@example.com" required />
+      </div>
+      <div class="field">
+        <label for="modal-password">Password</label>
+        <div class="password-row" style="position: relative;">
+          <input id="modal-password" type="password" placeholder="Enter password" required />
+          <button type="button" id="toggle-modal-password" class="icon-btn">👁</button>
+          <!--<button type="button" id="generate-password-btn" class="icon-btn generate-btn" title="Generate strong password">🔑</button> -->
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" id="cancel-add" class="secondary-btn">Cancel</button>
+        <button type="submit" class="primary-btn">Save Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+        <p id="vault-message" class="message"></p>
+
+        <!-- Password list -->
+        <div class="vault-table-wrapper">
+          <table class="vault-table">
+            <thead>
+              <tr>
+                <th>Website</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="vault-body">
+              
+            </tbody>
+          </table>
+          <p id="empty-state" class="empty-state" style="display: none;">
+            No passwords saved yet.
+          </p>
+        </div>
+        
+        <!-- Edit Password Modal -->
+<div id="edit-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Edit Password</h2>
+      <button id="close-modal" class="icon-btn" style="font-size: 18px;">✕</button>
+    </div>
+    <form id="edit-form">
+      <input type="hidden" id="edit-id" />
+      <div class="field">
+        <label for="edit-website">Website</label>
+        <input id="edit-website" type="text" required />
+      </div>
+      <div class="field">
+        <label for="edit-username">Username</label>
+        <input id="edit-username" type="text" required />
+      </div>
+      <div class="field">
+        <label for="edit-password">Password</label>
+        <div class="password-row">
+          <input id="edit-password" type="password" required />
+          <button type="button" id="toggle-edit-password" class="icon-btn">👁</button>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" id="cancel-edit" class="secondary-btn">Cancel</button>
+        <button type="submit" class="primary-btn">Update Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+      </div>
+
+      <!-- 2. Password Generator Section -->
+      <div id="generator-section" class="page-section">
+        <header class="page-header">
+          <h1 class="page-title">Password Generator</h1>
+        </header>
+        <div class="generator-section">
+          
+          <div class="generator-controls">
+            <div class="field">
+              <label for="gen-length">Length</label>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <input type="range" id="gen-length" min="8" max="64" value="16" />
+                <span id="gen-length-value" style="min-width: 24px; font-weight: 600;">16</span>
+              </div>
+            </div>
+            
+            <div class="checkbox-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="gen-numbers" checked /> Numbers
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="gen-symbols" checked /> Symbols
+              </label>
+            </div>
+            
+            <button id="generate-btn" class="primary-btn">Generate Password</button>
+          </div>
+          
+          <div class="generated-password">
+            <input type="text" id="gen-password" readonly placeholder="Click Generate to create a secure password" />
+            <button id="copy-gen-btn" class="icon-btn" disabled>Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Strength Analyzer Section -->
+      <div id="analyzer-section" class="page-section">
+        <header class="page-header">
+          <h1 class="page-title">Strength Analyzer</h1>
+        </header>
+        <div class="strength-section">
+          
+          <form class="form">
+            <div class="field">
+              <label for="strength-password">Test Password</label>
+              <div class="password-row">
+                <input id="strength-password" type="password" placeholder="Enter password to analyze" />
+                <button type="button" id="toggle-strength" class="icon-btn">👁</button>
+              </div>
+            </div>
+            <div class="strength-meter">
+              <div class="meter-bar">
+                <div class="meter-fill" id="meter-fill"></div>
+              </div>
+              <span id="strength-label" class="strength-label">Enter a password</span>
+            </div>
+            <div class="strength-rules">
+              <div class="rule" id="rule-length">• At least 12 characters</div>
+              <div class="rule" id="rule-upper">• One uppercase letter</div>
+              <div class="rule" id="rule-lower">• One lowercase letter</div>
+              <div class="rule" id="rule-number">• One number</div>
+              <div class="rule" id="rule-symbol">• One symbol</div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 4. 2FA Settings Section -->
+<div id="2fa-section" class="page-section">
+  <div class="twofa-container" style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1 class="page-title">Two-Factor Authentication Settings</h1>
+    
+    <div id="2fa-status-card" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      
+      <div id="2fa-status-loading" style="text-align: center; padding: 40px;">
+        <div class="spinner"></div>
+        <p>Loading 2FA status...</p>
+      </div>
+      
+      <div id="2fa-status-content" style="display: none;">
+        
+      </div>
+    </div>
+    
+
+  </div>
+</div>
+
+      <!-- 5. Admin Dashboard Section - ADD THIS -->
+      <div id="admin-section" class="page-section">
+        <div class="admin-container">
+          <iframe src="admin.html" style="width: 100%; height: 80vh; border: none; border-radius: 8px;"></iframe>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="vault.js" defer></script>
+</body>
+</html>

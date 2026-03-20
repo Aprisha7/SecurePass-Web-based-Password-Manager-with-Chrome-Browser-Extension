@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SecurePass – Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+
+    /* Admin-specific styles */
+    .admin-container {
+      flex: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-bottom: 0 !important;  
+      margin-bottom: 0 !important;
+      padding: 24px 24px 0 24px !important;
+      min-height: fit-content;
+      }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .admin-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .admin-badge {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .user-management-section {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 24px;
+      margin-bottom: 0 !important;
+      padding-bottom: 8px !important;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 20px 0;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .search-box input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .users-table th {
+      text-align: left;
+      padding: 12px 8px;
+      background: #f8fafc;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .users-table td {
+      padding: 12px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .users-table th:nth-child(1),
+    .users-table td:nth-child(1) {
+    width: 35%; /* Email column */
+    }
+
+    .users-table th:nth-child(2),
+    .users-table td:nth-child(2) {
+    width: 20%; /* Role column */
+    }
+
+    .users-table th:nth-child(3),
+    .users-table td:nth-child(3) {
+    width: 22%; /* Joined column */
+    }
+
+    .users-table th:nth-child(4),
+    .users-table td:nth-child(4) {
+    width: 23%; /* Actions column */
+    }
+
+    .role-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .role-badge.admin {
+      background: #ede9fe;
+      color: #6d28d9;
+    }
+
+    .role-badge.user {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-right: 4px !important;
+    }
+
+    .promote-btn {
+      background: #10b981;
+      color: white;
+      min-width: 130px !important; 
+    }
+
+    .promote-btn:hover:not(:disabled) {
+      background: #059669;
+    }
+
+    .demote-btn {
+      background: #f59e0b;
+      color: white;
+      min-width: 130px !important;
+    }
+
+    .demote-btn:hover:not(:disabled) {
+      background: #d97706;
+    }
+
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px;
+      color: var(--text-muted);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 16px !important;
+    }
+
+    .users-table tbody tr:last-child td {
+    border-bottom: none; 
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 48px;
+      color: var(--text-muted);
+    }
+
+    .message {
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .message.success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .message.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    /* Delete user button */
+.delete-user-btn {
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+  border: 1px solid #fecaca !important;
+  min-width: 70px !important;
+}
+
+.delete-user-btn:hover:not(:disabled) {
+  background: #fecaca !important;
+  color: #dc2626 !important;
+}
+
+.delete-user-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.users-table td:last-child {
+  min-width: 240px;
+  white-space: nowrap;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.action-btn {
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  height: 36px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+    html, body {
+    height: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    }
+
+    body {
+    display: flex;
+    flex-direction: column;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title">Admin Dashboard</h1>
+        <span class="admin-badge">Admin Access</span>
+      </div>
+    </div>
+
+    <!-- Message Display -->
+    <div id="admin-message" class="message" style="display: none;"></div>
+
+    <!-- Stats Overview -->
+    <div class="stats-grid" id="stats-container">
+      <div class="stat-card">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value" id="total-users">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Admins</div>
+        <div class="stat-value" id="total-admins">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Regular Users</div>
+        <div class="stat-value" id="total-regular">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Passwords</div>
+        <div class="stat-value" id="total-passwords">0</div>
+      </div>
+    </div>
+
+    <!-- User Management Section -->
+    <div class="user-management-section">
+      <h2 class="section-title">
+        <span>👥</span> User Management
+      </h2>
+
+      <!-- Search -->
+      <div class="search-box">
+        <input 
+          type="text" 
+          id="user-search" 
+          placeholder="Search users by email or name..."
+        />
+        <button id="clear-search" class="secondary-btn" style="display: none;">Clear</button>
+      </div>
+
+      <!-- Users Table -->
+      <div class="table-responsive">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <!-- Users will be populated here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="loading" style="display: none;">
+        Loading users...
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state" style="display: none;">
+        No users found.
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
